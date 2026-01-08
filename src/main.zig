@@ -1,26 +1,51 @@
 const std = @import("std");
-const Io = std.Io;
+const build = @import("build.zig.zon");
 
 pub fn main() !void {
-    // Prints to stderr, unbuffered, ignoring potential errors.
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+    var debug_alloc: std.heap.DebugAllocator(.{}) = .init;
+    defer _ = debug_alloc.deinit();
+    const alloc = debug_alloc.allocator();
 
-    // In order to allocate memory we must construct an `Allocator` instance.
-    var debug_allocator: std.heap.DebugAllocator(.{}) = .init;
-    defer _ = debug_allocator.deinit(); // This checks for leaks.
-    const gpa = debug_allocator.allocator();
+    const args = try std.process.argsAlloc(alloc);
+    defer std.process.argsFree(alloc, args);
 
-    // In order to do I/O operations we must construct an `Io` instance.
-    var threaded: std.Io.Threaded = .init(gpa, .{});
+    var threaded: std.Io.Threaded = .init(alloc, .{});
     defer threaded.deinit();
     const io = threaded.io();
 
-    // Stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    var stdout_buffer: [1024]u8 = undefined;
-    var stdout_file_writer: Io.File.Writer = .init(.stdout(), io, &stdout_buffer);
-    const stdout_writer = &stdout_file_writer.interface;
+    var stderr_buffer: [1024]u8 = undefined;
+    var stderr_file_writer: std.Io.File.Writer = .init(.stderr(), io, &stderr_buffer);
+    const stderr_writer = &stderr_file_writer.interface;
 
-    try stdout_writer.flush(); // Don't forget to flush!
+    if (args.len == 2 and std.mem.eql(u8, args[1], "help")) {
+        try printUsage(stderr_writer);
+    } else if (args.len >= 3 and std.mem.eql(u8, args[1], "render")) {
+        try stderr_writer.print("render\n", .{});
+        for (args[2..]) |file| {
+            try stderr_writer.print("  {s}\n", .{file});
+        }
+    } else if (args.len == 2 and std.mem.eql(u8, args[1], "version")) {
+        try stderr_writer.print("SDF Tools     {s}\nSpecification {s}\n", .{
+            build.version,
+            build.spec_version,
+        });
+    } else {
+        try stderr_writer.print("Error, invalid command\n\n", .{});
+        try printUsage(stderr_writer);
+    }
+
+    try stderr_writer.flush();
+}
+
+fn printUsage(writer: *std.Io.Writer) !void {
+    try writer.print(
+        \\Usage: sdf [command]
+        \\
+        \\Commands:
+        \\  render [files]    Render files
+        \\
+        \\  help              Print this help and exit
+        \\  version           Print version and exit
+        \\
+    , .{});
 }
