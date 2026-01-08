@@ -1,0 +1,14 @@
+.{
+    .name = .sdf,
+    .version = "0.0.1",
+    .fingerprint = 0xcb665d50f3338d6,
+    .minimum_zig_version = "0.16.0-dev.1912+0cbaaa5eb",
+    .dependencies = .{},
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "LICENSE",
+        "README.md",
+    },
+}
