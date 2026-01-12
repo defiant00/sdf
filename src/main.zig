@@ -17,7 +17,12 @@ pub fn main() !void {
     var stderr_file_writer: std.Io.File.Writer = .init(.stderr(), io, &stderr_buffer);
     const stderr_writer = &stderr_file_writer.interface;
 
-    if (args.len == 2 and std.mem.eql(u8, args[1], "help")) {
+    if (args.len >= 3 and std.mem.eql(u8, args[1], "debug")) {
+        try stderr_writer.print("debug\n", .{});
+        for (args[2..]) |file| {
+            try stderr_writer.print("  {s}\n", .{file});
+        }
+    } else if (args.len == 2 and std.mem.eql(u8, args[1], "help")) {
         try printUsage(stderr_writer);
     } else if (args.len >= 3 and std.mem.eql(u8, args[1], "render")) {
         try stderr_writer.print("render\n", .{});
@@ -42,6 +47,8 @@ fn printUsage(writer: *std.Io.Writer) !void {
         \\Usage: sdf [command]
         \\
         \\Commands:
+        \\  debug [files]     Debug files
+        \\
         \\  render [files]    Render files
         \\
         \\  help              Print this help and exit
