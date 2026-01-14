@@ -1,0 +1,5 @@
+
+(scene
+	(sphere 1)
+    (sphere 1.2)
+)
