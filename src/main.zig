@@ -1,11 +1,13 @@
 const std = @import("std");
+
 const build = @import("build.zig.zon");
+const Parser = @import("Parser.zig");
 
 const usage =
     \\Usage: sdf [command]
     \\
     \\Commands:
-    \\  debug [files]     Debug files
+    \\  validate [files]  Validate files
     \\
     \\  render [files]    Render files
     \\
@@ -17,12 +19,15 @@ const usage =
 pub fn main() !void {
     var debug_alloc: std.heap.DebugAllocator(.{}) = .init;
     defer _ = debug_alloc.deinit();
-    const alloc = debug_alloc.allocator();
+    const gpa = debug_alloc.allocator();
 
-    const args = try std.process.argsAlloc(alloc);
-    defer std.process.argsFree(alloc, args);
+    var arena_instance = std.heap.ArenaAllocator.init(gpa);
+    defer arena_instance.deinit();
+    const arena = arena_instance.allocator();
 
-    var threaded: std.Io.Threaded = .init(alloc, .{});
+    const args = try std.process.argsAlloc(arena);
+
+    var threaded: std.Io.Threaded = .init(gpa, .{});
     defer threaded.deinit();
     const io = threaded.io();
 
@@ -42,7 +47,7 @@ pub fn main() !void {
         }
     } else if (args.len >= 3 and std.mem.eql(u8, args[1], "validate")) {
         for (args[2..]) |path| {
-            try validate(stdout_writer, stderr_writer, path);
+            try validate(io, arena, stdout_writer, stderr_writer, path);
         }
     } else if (args.len == 2 and std.mem.eql(u8, args[1], "version")) {
         try stdout_writer.print("SDF Tools     {s}\nSpecification {s}\n", .{
@@ -65,8 +70,14 @@ fn render(out: *std.Io.Writer, err: *std.Io.Writer, path: []const u8) !void {
     try err.flush();
 }
 
-fn validate(out: *std.Io.Writer, err: *std.Io.Writer, path: []const u8) !void {
+fn validate(io: std.Io, arena: std.mem.Allocator, out: *std.Io.Writer, err: *std.Io.Writer, path: []const u8) !void {
     _ = out;
     try err.print("{s}\n", .{path});
     try err.flush();
+
+    const source = try std.Io.Dir.cwd().readFileAlloc(io, path, arena, .unlimited);
+    std.debug.print("file contents:\n{s}", .{source});
+
+    const result = try Parser.parse(source);
+    _ = result;
 }
