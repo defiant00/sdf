@@ -1,4 +1,5 @@
 const std = @import("std");
+const unicode = std.unicode;
 
 pub const Token = struct {
     pub const Type = enum {
@@ -16,23 +17,145 @@ pub const Token = struct {
     type: Type,
     trivia: []const u8,
     value: []const u8,
+
+    pub fn print(self: Token) void {
+        std.debug.print("[{}] \"", .{self.type});
+        for (self.trivia) |c| {
+            switch (c) {
+                '\t' => std.debug.print("\\t", .{}),
+                '\r' => std.debug.print("\\r", .{}),
+                '\n' => std.debug.print("\\n", .{}),
+                else => std.debug.print("{c}", .{c}),
+            }
+        }
+        std.debug.print("\" \"{s}\"\n", .{self.value});
+    }
 };
 
 const Lexer = @This();
 
 source: []const u8,
+trivia_start_index: usize,
+value_start_index: usize,
+current_index: usize,
 
 pub fn init(source: []const u8) Lexer {
     return .{
         .source = source,
+        .trivia_start_index = 0,
+        .value_start_index = 0,
+        .current_index = 0,
     };
 }
 
-pub fn lexToken(self: *Lexer) Token {
-    _ = self;
-    return .{
-        .type = .eof,
-        .trivia = "",
-        .value = "",
+fn isAtEnd(self: Lexer) bool {
+    return self.current_index >= self.source.len;
+}
+
+fn currentLength(self: Lexer) !u3 {
+    return unicode.utf8ByteSequenceLength(self.source[self.current_index]);
+}
+
+fn advance(self: *Lexer) !void {
+    if (!self.isAtEnd()) {
+        self.current_index += try self.currentLength();
+    }
+}
+
+fn peek(self: Lexer) !u21 {
+    return unicode.utf8Decode(self.source[self.current_index .. self.current_index + try self.currentLength()]);
+}
+
+fn discard(self: *Lexer) void {
+    self.trivia_start_index = self.current_index;
+}
+
+fn token(self: *Lexer, token_type: Token.Type) Token {
+    const tok = Token{
+        .type = token_type,
+        .trivia = self.source[self.trivia_start_index..self.value_start_index],
+        .value = self.source[self.value_start_index..self.current_index],
     };
+    self.discard();
+    return tok;
+}
+
+fn errorToken(self: *Lexer, message: []const u8) Token {
+    const tok = Token{
+        .type = .error_,
+        .trivia = "",
+        .value = message,
+    };
+    self.discard();
+    return tok;
+}
+
+fn isIdentifier(c: u21) bool {
+    return switch (c) {
+        '(', ')', '[', ']', '.', ';' => false,
+        else => !isWhitespace(c),
+    };
+}
+
+fn isNumber(c: u21) bool {
+    return switch (c) {
+        '0'...'9' => true,
+        else => false,
+    };
+}
+
+fn isWhitespace(c: u21) bool {
+    return switch (c) {
+        ' ', '\t', '\r', '\n' => true,
+        else => false,
+    };
+}
+
+fn identifier(self: *Lexer) !Token {
+    while (!self.isAtEnd() and isIdentifier(try self.peek())) try self.advance();
+    return self.token(.identifier);
+}
+
+fn number(self: *Lexer) !Token {
+    while (!self.isAtEnd() and isNumber(try self.peek())) try self.advance();
+
+    // todo - decimal and digits after the decimal
+
+    return self.token(.number);
+}
+
+pub fn lexToken(self: *Lexer) !Token {
+    // trivia
+    while (!self.isAtEnd()) {
+        const c = try self.peek();
+        switch (c) {
+            ' ', '\t', '\r', '\n' => try self.advance(),
+
+            // todo - comment
+            ';' => break,
+
+            else => break,
+        }
+    }
+
+    // value
+    self.value_start_index = self.current_index;
+    while (!self.isAtEnd()) {
+        const c = try self.peek();
+        try self.advance();
+
+        switch (c) {
+            '(' => return self.token(.left_paren),
+            ')' => return self.token(.right_paren),
+            '[' => return self.token(.left_bracket),
+            ']' => return self.token(.right_bracket),
+            '.' => return self.token(.dot),
+            else => {
+                if (isNumber(c)) return self.number();
+                return self.identifier();
+            },
+        }
+    }
+
+    return self.token(.eof);
 }
