@@ -1,5 +1,6 @@
+; basic 3d test scene
 
 (scene
-	(sphere 1)
-    (sphere 1.2)
+	(sphere 1)   ; first sphere
+    (sphere 1.2) ; second sphere
 )

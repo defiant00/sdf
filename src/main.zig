@@ -7,10 +7,10 @@ const usage =
     \\Usage: sdf [command]
     \\
     \\Commands:
-    \\  format [files]    Format files
+    \\  format   [files]  Format files
     \\  validate [files]  Validate files
     \\
-    \\  render [files]    Render files
+    \\  render   [files]  Render files
     \\
     \\  help              Print this help and exit
     \\  version           Print version and exit
@@ -72,23 +72,20 @@ pub fn main() !void {
 fn format(out: *std.Io.Writer, err: *std.Io.Writer, path: []const u8) !void {
     _ = out;
     try err.print("{s}\n", .{path});
-    try err.flush();
 }
 
 fn render(out: *std.Io.Writer, err: *std.Io.Writer, path: []const u8) !void {
     _ = out;
     try err.print("{s}\n", .{path});
-    try err.flush();
 }
 
 fn validate(io: std.Io, arena: std.mem.Allocator, out: *std.Io.Writer, err: *std.Io.Writer, path: []const u8) !void {
     _ = out;
     try err.print("{s}\n", .{path});
-    try err.flush();
 
     const source = try std.Io.Dir.cwd().readFileAlloc(io, path, arena, .unlimited);
-    std.debug.print("file contents:\n{s}", .{source});
+    try err.print("---\n{s}\n---\n", .{source});
 
-    const result = try Parser.parse(source);
+    const result = try Parser.parse(source, err);
     _ = result;
 }

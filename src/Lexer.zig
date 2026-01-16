@@ -18,17 +18,17 @@ pub const Token = struct {
     trivia: []const u8,
     value: []const u8,
 
-    pub fn print(self: Token) void {
-        std.debug.print("[{}] \"", .{self.type});
+    pub fn print(self: Token, out: *std.Io.Writer) !void {
+        try out.print("[{}] \"", .{self.type});
         for (self.trivia) |c| {
             switch (c) {
-                '\t' => std.debug.print("\\t", .{}),
-                '\r' => std.debug.print("\\r", .{}),
-                '\n' => std.debug.print("\\n", .{}),
-                else => std.debug.print("{c}", .{c}),
+                '\t' => try out.print("\\t", .{}),
+                '\r' => try out.print("\\r", .{}),
+                '\n' => try out.print("\\n", .{}),
+                else => try out.print("{c}", .{c}),
             }
         }
-        std.debug.print("\" \"{s}\"\n", .{self.value});
+        try out.print("\" \"{s}\"\n", .{self.value});
     }
 };
 
@@ -57,9 +57,7 @@ fn currentLength(self: Lexer) !u3 {
 }
 
 fn advance(self: *Lexer) !void {
-    if (!self.isAtEnd()) {
-        self.current_index += try self.currentLength();
-    }
+    if (!self.isAtEnd()) self.current_index += try self.currentLength();
 }
 
 fn peek(self: Lexer) !u21 {
@@ -71,7 +69,7 @@ fn discard(self: *Lexer) void {
 }
 
 fn token(self: *Lexer, token_type: Token.Type) Token {
-    const tok = Token{
+    const tok: Token = .{
         .type = token_type,
         .trivia = self.source[self.trivia_start_index..self.value_start_index],
         .value = self.source[self.value_start_index..self.current_index],
@@ -81,7 +79,7 @@ fn token(self: *Lexer, token_type: Token.Type) Token {
 }
 
 fn errorToken(self: *Lexer, message: []const u8) Token {
-    const tok = Token{
+    const tok: Token = .{
         .type = .error_,
         .trivia = "",
         .value = message,
@@ -117,9 +115,16 @@ fn identifier(self: *Lexer) !Token {
 }
 
 fn number(self: *Lexer) !Token {
+    // digits
     while (!self.isAtEnd() and isNumber(try self.peek())) try self.advance();
 
-    // todo - decimal and digits after the decimal
+    // optional decimal
+    if (!self.isAtEnd() and try self.peek() == '.') {
+        try self.advance(); // .
+
+        // digits
+        while (!self.isAtEnd() and isNumber(try self.peek())) try self.advance();
+    }
 
     return self.token(.number);
 }
@@ -130,10 +135,7 @@ pub fn lexToken(self: *Lexer) !Token {
         const c = try self.peek();
         switch (c) {
             ' ', '\t', '\r', '\n' => try self.advance(),
-
-            // todo - comment
-            ';' => break,
-
+            ';' => while (!self.isAtEnd() and try self.peek() != '\n') try self.advance(),
             else => break,
         }
     }

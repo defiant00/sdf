@@ -18,7 +18,7 @@ fn advance(self: *Parser) !void {
     }
 }
 
-pub fn parse(source: []const u8) !void {
+pub fn parse(source: []const u8, out: *std.Io.Writer) !void {
     var parser: Parser = .{
         .lexer = .init(source),
         .current = undefined,
@@ -28,8 +28,8 @@ pub fn parse(source: []const u8) !void {
     try parser.advance();
 
     while (parser.current.type != .eof and parser.current.type != .error_) {
-        parser.current.print();
+        try parser.current.print(out);
         try parser.advance();
     }
-    parser.current.print();
+    try parser.current.print(out);
 }
