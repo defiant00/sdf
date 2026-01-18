@@ -1,6 +1,7 @@
 const std = @import("std");
 
 const build = @import("build.zig.zon");
+const Image = @import("Image.zig");
 const Parser = @import("Parser.zig");
 
 const usage =
@@ -88,4 +89,17 @@ fn validate(io: std.Io, arena: std.mem.Allocator, out: *std.Io.Writer, err: *std
 
     const result = try Parser.parse(source, err);
     _ = result;
+
+    // image test
+    const img = try Image.init(arena, 200, 100);
+    defer img.deinit();
+
+    for (0..100) |y| {
+        const b = @as(f32, @floatFromInt(y)) / 100.0;
+        for (0..200) |x| {
+            const r = @as(f32, @floatFromInt(x)) / 200.0;
+            img.set(@intCast(x), @intCast(y), r, 0, b, 1);
+        }
+    }
+    try img.save(io, "test.pam");
 }
