@@ -1,11 +1,6 @@
 const std = @import("std");
 
-const Color = struct {
-    r: f32,
-    g: f32,
-    b: f32,
-    a: f32,
-};
+const Color = @import("Color.zig");
 
 const Image = @This();
 
@@ -31,7 +26,7 @@ pub fn set(self: Image, x: u32, y: u32, r: f32, g: f32, b: f32, a: f32) void {
     self.buffer[y * self.width + x] = .{ .r = r, .g = g, .b = b, .a = a };
 }
 
-pub fn save(self: Image, io: std.Io, path: []const u8) !void {
+pub fn saveTga(self: Image, io: std.Io, path: []const u8) !void {
     var out = try std.Io.Dir.cwd().createFile(io, path, .{});
     defer out.close(io);
 
