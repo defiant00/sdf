@@ -101,5 +101,5 @@ fn validate(io: std.Io, arena: std.mem.Allocator, out: *std.Io.Writer, err: *std
             img.set(@intCast(x), @intCast(y), r, 0, b, 1);
         }
     }
-    try img.save(io, "test.pam");
+    try img.save(io, "test.tga");
 }
