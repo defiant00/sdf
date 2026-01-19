@@ -1,12 +1,13 @@
 const std = @import("std");
 
 const Lexer = @import("Lexer.zig");
+const Token = @import("Token.zig");
 
 const Parser = @This();
 
 lexer: Lexer,
-current: Lexer.Token,
-previous: Lexer.Token,
+current: Token,
+previous: Token,
 
 fn advance(self: *Parser) !void {
     self.previous = self.current;

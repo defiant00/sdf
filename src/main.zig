@@ -1,6 +1,7 @@
 const std = @import("std");
 
 const build = @import("build.zig.zon");
+const File = @import("cst/File.zig");
 const Image = @import("Image.zig");
 const Parser = @import("Parser.zig");
 
@@ -102,4 +103,12 @@ fn validate(io: std.Io, arena: std.mem.Allocator, out: *std.Io.Writer, err: *std
         }
     }
     try img.saveTga(io, "test.tga");
+
+    // cst interface test
+    var f: File = .{ .t_eof = .{
+        .type = .eof,
+        .trivia = "trivia!",
+        .value = "",
+    } };
+    f.node().print(3);
 }
