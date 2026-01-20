@@ -4,10 +4,9 @@ const Token = @import("../Token.zig");
 
 const File = @This();
 
+name: []const u8,
 t_eof: Token,
 
-pub fn print(self: File, out: *std.Io.Writer, indent: u32) !void {
-    _ = self;
-    for (0..indent) |_| try out.writeAll("  ");
-    try out.writeAll("file\n");
+pub fn print(self: File, out: *std.Io.Writer) !void {
+    try out.print("file ({s})\n", .{self.name});
 }
