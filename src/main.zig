@@ -110,5 +110,5 @@ fn validate(io: std.Io, arena: std.mem.Allocator, out: *std.Io.Writer, err: *std
         .trivia = "trivia!",
         .value = "",
     } };
-    f.node().print(3);
+    try f.node().print(err, 0);
 }

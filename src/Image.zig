@@ -1,29 +1,29 @@
 const std = @import("std");
 
-const Color = @import("Color.zig");
+const Vector4 = @import("Vector4.zig");
 
 const Image = @This();
 
 alloc: std.mem.Allocator,
 width: u32,
 height: u32,
-buffer: []Color,
+pixels: []Vector4,
 
 pub fn init(alloc: std.mem.Allocator, width: u32, height: u32) !Image {
     return .{
         .alloc = alloc,
         .width = width,
         .height = height,
-        .buffer = try alloc.alloc(Color, width * height),
+        .pixels = try alloc.alloc(Vector4, width * height),
     };
 }
 
 pub fn deinit(self: Image) void {
-    self.alloc.free(self.buffer);
+    self.alloc.free(self.pixels);
 }
 
 pub fn set(self: Image, x: u32, y: u32, r: f32, g: f32, b: f32, a: f32) void {
-    self.buffer[y * self.width + x] = .{ .r = r, .g = g, .b = b, .a = a };
+    self.pixels[y * self.width + x] = .{ .x = r, .y = g, .z = b, .w = a };
 }
 
 pub fn saveTga(self: Image, io: std.Io, path: []const u8) !void {
@@ -54,11 +54,11 @@ pub fn saveTga(self: Image, io: std.Io, path: []const u8) !void {
     try writer.writeByte(0b00_1_0_1000); // image descriptor
 
     // image bytes
-    for (self.buffer) |c| {
-        try writer.writeByte(toByte(c.b));
-        try writer.writeByte(toByte(c.g));
-        try writer.writeByte(toByte(c.r));
-        try writer.writeByte(toByte(c.a));
+    for (self.pixels) |p| {
+        try writer.writeByte(toByte(p.b()));
+        try writer.writeByte(toByte(p.g()));
+        try writer.writeByte(toByte(p.r()));
+        try writer.writeByte(toByte(p.a()));
     }
 
     try writer.flush();
