@@ -1,8 +1,6 @@
 const std = @import("std");
 
 const build = @import("build.zig.zon");
-const File = @import("cst/File.zig");
-const node = @import("cst/node.zig");
 const Parser = @import("Parser.zig");
 
 const usage =
@@ -88,18 +86,6 @@ fn validate(io: std.Io, arena: std.mem.Allocator, out: *std.Io.Writer, err: *std
     const source = try std.Io.Dir.cwd().readFileAlloc(io, path, arena, .unlimited);
     try err.print("---\n{s}\n---\n", .{source});
 
-    const result = try Parser.parse(source, err);
-    _ = result;
-
-    // node test
-    var f: File = .{
-        .name = path,
-        .t_eof = .{
-            .type = .eof,
-            .trivia = "trivia!",
-            .value = "",
-        },
-    };
-    const n = node.file(&f);
-    try n.print(err, 0);
+    const result = try Parser.parse(arena, source, path);
+    try result.print(err);
 }

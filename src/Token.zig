@@ -5,12 +5,8 @@ const Token = @This();
 pub const Type = enum {
     left_paren,
     right_paren,
-    left_bracket,
-    right_bracket,
-    dot,
     identifier,
     number,
-    error_,
     eof,
 };
 

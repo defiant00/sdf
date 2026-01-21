@@ -49,19 +49,9 @@ fn token(self: *Lexer, token_type: Token.Type) Token {
     return tok;
 }
 
-fn errorToken(self: *Lexer, message: []const u8) Token {
-    const tok: Token = .{
-        .type = .error_,
-        .trivia = "",
-        .value = message,
-    };
-    self.discard();
-    return tok;
-}
-
 fn isIdentifier(c: u21) bool {
     return switch (c) {
-        '(', ')', '[', ']', '.', ';' => false,
+        '(', ')', ';' => false,
         else => !isWhitespace(c),
     };
 }
@@ -120,9 +110,6 @@ pub fn lexToken(self: *Lexer) !Token {
         switch (c) {
             '(' => return self.token(.left_paren),
             ')' => return self.token(.right_paren),
-            '[' => return self.token(.left_bracket),
-            ']' => return self.token(.right_bracket),
-            '.' => return self.token(.dot),
             else => {
                 if (isNumber(c)) return self.number();
                 return self.identifier();
