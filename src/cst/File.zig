@@ -1,12 +1,12 @@
 const std = @import("std");
 
-const node = @import("node.zig");
+const item = @import("item.zig");
 const Token = @import("../Token.zig");
 
 const File = @This();
 
 name: []const u8,
-scene: node.Node,
+scene: item.Item,
 t_eof: Token,
 
 pub fn print(self: File, out: *std.Io.Writer) !void {

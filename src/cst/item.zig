@@ -10,24 +10,24 @@ const Type = enum {
     number,
 };
 
-pub fn identifier(i: *Identifier) Node {
+pub fn identifier(i: *Identifier) Item {
     return .{ .identifier = i };
 }
 
-pub fn list(l: *List) Node {
+pub fn list(l: *List) Item {
     return .{ .list = l };
 }
 
-pub fn number(n: *Number) Node {
+pub fn number(n: *Number) Item {
     return .{ .number = n };
 }
 
-pub const Node = union(Type) {
+pub const Item = union(Type) {
     identifier: *Identifier,
     list: *List,
     number: *Number,
 
-    pub fn print(self: Node, out: *std.Io.Writer, indent: u32) !void {
+    pub fn print(self: Item, out: *std.Io.Writer, indent: u32) !void {
         for (0..indent) |_| try out.writeAll("  ");
 
         switch (self) {
@@ -36,7 +36,7 @@ pub const Node = union(Type) {
                 try out.print("list\n", .{});
                 for (l.items.items) |item| try item.print(out, indent + 1);
             },
-            .number => |n| try out.print("num {d} ({s})\n", .{ n.value, n.t_value.value }),
+            .number => |n| try out.print("num ({s})\n", .{n.t_value.value}),
         }
     }
 };
