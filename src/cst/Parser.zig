@@ -1,11 +1,11 @@
 const std = @import("std");
 
-const File = @import("cst/File.zig");
-const Identifier = @import("cst/Identifier.zig");
-const item = @import("cst/item.zig");
+const File = @import("File.zig");
+const Identifier = @import("Identifier.zig");
+const item = @import("item.zig");
 const Lexer = @import("Lexer.zig");
-const List = @import("cst/List.zig");
-const Number = @import("cst/Number.zig");
+const List = @import("List.zig");
+const Number = @import("Number.zig");
 const Token = @import("Token.zig");
 
 const Parser = @This();

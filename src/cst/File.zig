@@ -1,7 +1,7 @@
 const std = @import("std");
 
 const item = @import("item.zig");
-const Token = @import("../Token.zig");
+const Token = @import("Token.zig");
 
 const File = @This();
 

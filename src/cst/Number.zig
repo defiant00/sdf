@@ -1,3 +1,3 @@
-const Token = @import("../Token.zig");
+const Token = @import("Token.zig");
 
 t_value: Token,

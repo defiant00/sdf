@@ -1,7 +1,7 @@
 const std = @import("std");
 
 const build = @import("build.zig.zon");
-const Parser = @import("Parser.zig");
+const Parser = @import("cst/Parser.zig");
 
 const usage =
     \\Usage: sdf [command]
