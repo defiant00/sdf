@@ -53,12 +53,12 @@ pub fn saveTga(self: Image, io: std.Io, path: []const u8) !void {
     try writer.writeByte(32); // bits per pixel
     try writer.writeByte(0b00_1_0_1000); // image descriptor
 
-    // image bytes
+    // image bytes (bgra)
     for (self.pixels) |p| {
-        try writer.writeByte(toByte(p.b()));
-        try writer.writeByte(toByte(p.g()));
-        try writer.writeByte(toByte(p.r()));
-        try writer.writeByte(toByte(p.a()));
+        try writer.writeByte(toByte(p.z));
+        try writer.writeByte(toByte(p.y));
+        try writer.writeByte(toByte(p.x));
+        try writer.writeByte(toByte(p.w));
     }
 
     try writer.flush();

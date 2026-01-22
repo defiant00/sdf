@@ -2,6 +2,7 @@ const std = @import("std");
 
 const build = @import("build.zig.zon");
 const Parser = @import("cst/Parser.zig");
+const rt = @import("rt/all_nodes.zig");
 
 const usage =
     \\Usage: sdf [command]
@@ -87,5 +88,10 @@ fn validate(io: std.Io, arena: std.mem.Allocator, out: *std.Io.Writer, err: *std
     try err.print("---\n{s}\n---\n", .{source});
 
     const result = try Parser.parse(arena, source, path);
+    try err.print("\nsyntax tree:\n\n", .{});
     try result.print(err);
+
+    const node = try rt.Node.fromItem(arena, result.scene);
+    try err.print("\nrender tree:\n\n", .{});
+    try node.print(err, 0);
 }

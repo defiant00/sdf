@@ -49,17 +49,17 @@ fn token(self: *Lexer, token_type: Token.Type) Token {
     return tok;
 }
 
+fn isDigit(c: u21) bool {
+    return switch (c) {
+        '0'...'9' => true,
+        else => false,
+    };
+}
+
 fn isIdentifier(c: u21) bool {
     return switch (c) {
         '(', ')', ';' => false,
         else => !isWhitespace(c),
-    };
-}
-
-fn isNumber(c: u21) bool {
-    return switch (c) {
-        '0'...'9' => true,
-        else => false,
     };
 }
 
@@ -77,14 +77,14 @@ fn identifier(self: *Lexer) !Token {
 
 fn number(self: *Lexer) !Token {
     // digits
-    while (!self.isAtEnd() and isNumber(try self.peek())) try self.advance();
+    while (!self.isAtEnd() and isDigit(try self.peek())) try self.advance();
 
     // optional decimal
     if (!self.isAtEnd() and try self.peek() == '.') {
         try self.advance(); // .
 
         // digits
-        while (!self.isAtEnd() and isNumber(try self.peek())) try self.advance();
+        while (!self.isAtEnd() and isDigit(try self.peek())) try self.advance();
     }
 
     return self.token(.number);
@@ -111,7 +111,7 @@ pub fn lexToken(self: *Lexer) !Token {
             '(' => return self.token(.left_paren),
             ')' => return self.token(.right_paren),
             else => {
-                if (isNumber(c)) return self.number();
+                if (isDigit(c) or c == '-') return self.number();
                 return self.identifier();
             },
         }
