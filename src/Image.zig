@@ -22,8 +22,8 @@ pub fn deinit(self: Image) void {
     self.alloc.free(self.pixels);
 }
 
-pub fn set(self: Image, x: u32, y: u32, r: f32, g: f32, b: f32, a: f32) void {
-    self.pixels[y * self.width + x] = .{ .x = r, .y = g, .z = b, .w = a };
+pub fn set(self: Image, x: u32, y: u32, c: Vector4) void {
+    self.pixels[y * self.width + x] = c;
 }
 
 pub fn saveTga(self: Image, io: std.Io, path: []const u8) !void {

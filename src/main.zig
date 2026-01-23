@@ -49,11 +49,11 @@ pub fn main() !void {
         try stdout_writer.print("{s}", .{usage});
     } else if (args.len >= 3 and std.mem.eql(u8, args[1], "render")) {
         for (args[2..]) |path| {
-            try render(stdout_writer, stderr_writer, path);
+            try render(io, arena, stderr_writer, path);
         }
     } else if (args.len >= 3 and std.mem.eql(u8, args[1], "validate")) {
         for (args[2..]) |path| {
-            try validate(io, arena, stdout_writer, stderr_writer, path);
+            try validate(io, arena, stderr_writer, path);
         }
     } else if (args.len == 2 and std.mem.eql(u8, args[1], "version")) {
         try stdout_writer.print("SDF Tools     {s}\nSpecification {s}\n", .{
@@ -75,13 +75,24 @@ fn format(out: *std.Io.Writer, err: *std.Io.Writer, path: []const u8) !void {
     try err.print("{s}\n", .{path});
 }
 
-fn render(out: *std.Io.Writer, err: *std.Io.Writer, path: []const u8) !void {
-    _ = out;
+fn render(io: std.Io, arena: std.mem.Allocator, err: *std.Io.Writer, path: []const u8) !void {
     try err.print("{s}\n", .{path});
+
+    const source = try std.Io.Dir.cwd().readFileAlloc(io, path, arena, .unlimited);
+    try err.print("---\n{s}\n---\n", .{source});
+
+    const result = try Parser.parse(arena, source, path);
+    try err.print("\nsyntax tree:\n\n", .{});
+    try result.print(err);
+
+    const node = try rt.Node.fromItem(arena, result.scene);
+    try err.print("\nrender tree:\n\n", .{});
+    try node.print(err, 0);
+
+    try node.camera.render(io, arena);
 }
 
-fn validate(io: std.Io, arena: std.mem.Allocator, out: *std.Io.Writer, err: *std.Io.Writer, path: []const u8) !void {
-    _ = out;
+fn validate(io: std.Io, arena: std.mem.Allocator, err: *std.Io.Writer, path: []const u8) !void {
     try err.print("{s}\n", .{path});
 
     const source = try std.Io.Dir.cwd().readFileAlloc(io, path, arena, .unlimited);

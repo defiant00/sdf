@@ -123,9 +123,14 @@ pub const Node = union(Type) {
     }
 
     pub fn dist(self: Node, point: Vector3) f32 {
-        _ = self;
-        _ = point;
-        return 0;
+        switch (self) {
+            .camera => return self.camera.scene.dist(point),
+            .move => return self.move.target.dist(point.sub(self.move.amount)),
+            .plane => return point.y - self.plane.contact.y,
+            .sphere => return point.length() - self.sphere.radius,
+            .subtract => return @max(-self.subtract.a.dist(point), self.subtract.b.dist(point)),
+            ._union => return @min(self._union.a.dist(point), self._union.b.dist(point)),
+        }
     }
 
     pub fn print(self: Node, out: *std.Io.Writer, indent: u32) !void {
