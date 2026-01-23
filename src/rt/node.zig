@@ -128,7 +128,7 @@ pub const Node = union(Type) {
             .move => return self.move.target.dist(point.sub(self.move.amount)),
             .plane => return point.y - self.plane.contact.y,
             .sphere => return point.length() - self.sphere.radius,
-            .subtract => return @max(-self.subtract.a.dist(point), self.subtract.b.dist(point)),
+            .subtract => return @max(self.subtract.a.dist(point), -self.subtract.b.dist(point)),
             ._union => return @min(self._union.a.dist(point), self._union.b.dist(point)),
         }
     }

@@ -29,6 +29,8 @@ pub fn render(self: Camera, io: std.Io, alloc: std.mem.Allocator) !void {
     const img = try Image.init(alloc, pw, ph);
     defer img.deinit();
 
+    const lightDir = Vector3.normalize(.{ .x = 5, .y = 4, .z = 3 });
+
     for (0..ph) |py| {
         for (0..pw) |px| {
             var uv = Vector2.mul(.{
@@ -39,21 +41,20 @@ pub fn render(self: Camera, io: std.Io, alloc: std.mem.Allocator) !void {
             const ro = self.position;
             const rd = Vector3.normalize(.{ .x = uv.x, .y = uv.y, .z = -1 });
             var depth: f32 = 0;
-            var color: Vector4 = .{ .x = 0, .y = 0, .z = 0, .w = 0 };
+            var color: Vector4 = .{ .x = 0, .y = 0, .z = 0, .w = 1 };
 
             for (0..MAX_STEPS) |_| {
                 const curPos = rd.mulF(depth).add(ro);
                 const distClosest = self.scene.dist(curPos);
 
                 if (distClosest < MIN_HIT_DIST) {
-                    //  vec3 normal = calcNormal(curPos);
-                    //  float shadow = calcShadow(curPos, lightDir, 0.1, 5.0, 8.0);
-                    //  float diffuse = max(dot(normal, lightDir), 0.0);
+                    const normal = self.calcNormal(curPos);
+                    const diffuse = @max(normal.dot(lightDir), 0);
+                    const shadow = self.calcShadow(curPos, lightDir, 0.1, 5, 8);
 
-                    color = .{ .x = 0, .y = 0, .z = 1, .w = 1 };
+                    color = .{ .x = 1, .y = 1, .z = 1, .w = 1 };
 
-                    //  fragColor = color * diffuse * shadow;
-
+                    color = color.mulF(diffuse * shadow);
                     break;
                 }
 
@@ -62,9 +63,38 @@ pub fn render(self: Camera, io: std.Io, alloc: std.mem.Allocator) !void {
                 depth += distClosest;
             }
 
+            // temporarily force alpha to 1
+            color.w = 1;
             img.set(@intCast(px), @intCast(py), color);
         }
     }
 
     try img.saveTga(io, "test.tga");
+}
+
+fn calcNormal(self: Camera, p: Vector3) Vector3 {
+    const o = 0.001;
+    return Vector3.normalize(.{
+        .x = self.scene.dist(.{ .x = p.x + o, .y = p.y, .z = p.z }) -
+            self.scene.dist(.{ .x = p.x - o, .y = p.y, .z = p.z }),
+        .y = self.scene.dist(.{ .x = p.x, .y = p.y + o, .z = p.z }) -
+            self.scene.dist(.{ .x = p.x, .y = p.y - o, .z = p.z }),
+        .z = self.scene.dist(.{ .x = p.x, .y = p.y, .z = p.z + o }) -
+            self.scene.dist(.{ .x = p.x, .y = p.y, .z = p.z - o }),
+    });
+}
+
+fn calcShadow(self: Camera, ro: Vector3, rd: Vector3, minT: f32, maxT: f32, k: f32) f32 {
+    var res: f32 = 1;
+    var t = minT;
+    for (0..MAX_STEPS) |_| {
+        if (t > maxT) break;
+
+        const h = self.scene.dist(rd.mulF(t).add(ro));
+        if (h < MIN_HIT_DIST) return 0;
+
+        res = @min(res, k * h / t);
+        t += h;
+    }
+    return res;
 }

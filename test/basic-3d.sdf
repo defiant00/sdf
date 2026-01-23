@@ -1,10 +1,10 @@
 ; basic 3d test scene
 
-(camera (80 60) (0 1.5 5) (0 0 -1)
+(camera (400 300) (0 1.5 5) (0 0 -1)
   (union
     (subtract
-      (move (2.4 2 0) (sphere 1))   ; first sphere
-      (move (2.9 2 1) (sphere 0.7)) ; second sphere
+      (move (0 2 0) (sphere 1))       ; first sphere
+      (move (0.7 2 0.5) (sphere 0.6)) ; second sphere
     )
     (plane (0 0 0) (0 1 0))
   )

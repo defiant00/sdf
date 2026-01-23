@@ -42,6 +42,10 @@ pub fn divF(a: Vector3, b: f32) Vector3 {
     };
 }
 
+pub fn dot(a: Vector3, b: Vector3) f32 {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
 pub fn length(a: Vector3) f32 {
     return @sqrt(a.lengthSquared());
 }
