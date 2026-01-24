@@ -34,13 +34,13 @@ pub fn render(self: Camera, io: std.Io, alloc: std.mem.Allocator) !void {
     for (0..ph) |py| {
         for (0..pw) |px| {
             var uv = Vector2.mul(.{
-                .x = 2 * (@as(f32, @floatFromInt(px)) + 0.5) / self.resolution.x - 1,
-                .y = -(2 * (@as(f32, @floatFromInt(py)) + 0.5) / self.resolution.y - 1),
+                .x = 2 * (@as(f64, @floatFromInt(px)) + 0.5) / self.resolution.x - 1,
+                .y = -(2 * (@as(f64, @floatFromInt(py)) + 0.5) / self.resolution.y - 1),
             }, scale);
 
             const ro = self.position;
             const rd = Vector3.normalize(.{ .x = uv.x, .y = uv.y, .z = -1 });
-            var depth: f32 = 0;
+            var depth: f64 = 0;
             var color: Vector4 = .{ .x = 0, .y = 0, .z = 0, .w = 1 };
 
             for (0..MAX_STEPS) |_| {
@@ -84,8 +84,8 @@ fn calcNormal(self: Camera, p: Vector3) Vector3 {
     });
 }
 
-fn calcShadow(self: Camera, ro: Vector3, rd: Vector3, minT: f32, maxT: f32, k: f32) f32 {
-    var res: f32 = 1;
+fn calcShadow(self: Camera, ro: Vector3, rd: Vector3, minT: f64, maxT: f64, k: f64) f64 {
+    var res: f64 = 1;
     var t = minT;
     for (0..MAX_STEPS) |_| {
         if (t > maxT) break;

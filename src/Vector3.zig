@@ -2,9 +2,9 @@ const std = @import("std");
 
 const Vector3 = @This();
 
-x: f32,
-y: f32,
-z: f32,
+x: f64,
+y: f64,
+z: f64,
 
 pub fn print(self: Vector3, out: *std.Io.Writer) !void {
     try out.print("[{d} {d} {d}]", .{ self.x, self.y, self.z });
@@ -18,7 +18,7 @@ pub fn add(a: Vector3, b: Vector3) Vector3 {
     };
 }
 
-pub fn addF(a: Vector3, b: f32) Vector3 {
+pub fn addF(a: Vector3, b: f64) Vector3 {
     return .{
         .x = a.x + b,
         .y = a.y + b,
@@ -34,7 +34,7 @@ pub fn div(a: Vector3, b: Vector3) Vector3 {
     };
 }
 
-pub fn divF(a: Vector3, b: f32) Vector3 {
+pub fn divF(a: Vector3, b: f64) Vector3 {
     return .{
         .x = a.x / b,
         .y = a.y / b,
@@ -42,15 +42,15 @@ pub fn divF(a: Vector3, b: f32) Vector3 {
     };
 }
 
-pub fn dot(a: Vector3, b: Vector3) f32 {
+pub fn dot(a: Vector3, b: Vector3) f64 {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-pub fn length(a: Vector3) f32 {
+pub fn length(a: Vector3) f64 {
     return @sqrt(a.lengthSquared());
 }
 
-pub fn lengthSquared(a: Vector3) f32 {
+pub fn lengthSquared(a: Vector3) f64 {
     return a.x * a.x + a.y * a.y + a.z * a.z;
 }
 
@@ -62,7 +62,7 @@ pub fn mul(a: Vector3, b: Vector3) Vector3 {
     };
 }
 
-pub fn mulF(a: Vector3, b: f32) Vector3 {
+pub fn mulF(a: Vector3, b: f64) Vector3 {
     return .{
         .x = a.x * b,
         .y = a.y * b,
@@ -82,7 +82,7 @@ pub fn sub(a: Vector3, b: Vector3) Vector3 {
     };
 }
 
-pub fn subF(a: Vector3, b: f32) Vector3 {
+pub fn subF(a: Vector3, b: f64) Vector3 {
     return .{
         .x = a.x - b,
         .y = a.y - b,

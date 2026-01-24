@@ -64,7 +64,7 @@ pub fn saveTga(self: Image, io: std.Io, path: []const u8) !void {
     try writer.flush();
 }
 
-fn toByte(val: f32) u8 {
+fn toByte(val: f64) u8 {
     if (val < 0) return 0;
     if (val > 1) return 255;
     return @intFromFloat(val * 255.0);

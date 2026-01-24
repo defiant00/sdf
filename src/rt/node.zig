@@ -122,7 +122,7 @@ pub const Node = union(Type) {
         return error.RenderTree;
     }
 
-    pub fn dist(self: Node, point: Vector3) f32 {
+    pub fn dist(self: Node, point: Vector3) f64 {
         switch (self) {
             .camera => return self.camera.scene.dist(point),
             .move => return self.move.target.dist(point.sub(self.move.amount)),
