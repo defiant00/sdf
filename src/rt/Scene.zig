@@ -9,8 +9,6 @@ const Vector4 = @import("../Vector4.zig");
 const Camera = @This();
 
 resolution: Vector2,
-position: Vector3,
-direction: Vector3,
 scene: rt.Node,
 
 const MAX_STEPS = 512;
@@ -38,13 +36,12 @@ pub fn render(self: Camera, io: std.Io, alloc: std.mem.Allocator) !void {
                 .y = -(2 * (@as(f64, @floatFromInt(py)) + 0.5) / self.resolution.y - 1),
             }, scale);
 
-            const ro = self.position;
             const rd = Vector3.normalize(.{ .x = uv.x, .y = uv.y, .z = -1 });
             var depth: f64 = 0;
             var color: Vector4 = .{ .x = 0, .y = 0, .z = 0, .w = 1 };
 
             for (0..MAX_STEPS) |_| {
-                const curPos = rd.mulF(depth).add(ro);
+                const curPos = rd.mulF(depth);
                 const distClosest = self.scene.dist(curPos);
 
                 if (distClosest < MIN_HIT_DIST) {

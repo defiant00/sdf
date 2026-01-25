@@ -89,7 +89,7 @@ fn render(io: std.Io, arena: std.mem.Allocator, err: *std.Io.Writer, path: []con
     try err.print("\nrender tree:\n\n", .{});
     try node.print(err, 0);
 
-    try node.camera.render(io, arena);
+    try node.scene.render(io, arena);
 }
 
 fn validate(io: std.Io, arena: std.mem.Allocator, err: *std.Io.Writer, path: []const u8) !void {
