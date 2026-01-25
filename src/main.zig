@@ -2,6 +2,7 @@ const std = @import("std");
 
 const build = @import("build.zig.zon");
 const Parser = @import("cst/Parser.zig");
+const render = @import("render.zig");
 const rt = @import("rt/all_nodes.zig");
 
 const usage =
@@ -43,17 +44,17 @@ pub fn main() !void {
 
     if (args.len >= 3 and std.mem.eql(u8, args[1], "format")) {
         for (args[2..]) |path| {
-            try format(stdout_writer, stderr_writer, path);
+            try formatFile(stdout_writer, stderr_writer, path);
         }
     } else if (args.len == 2 and std.mem.eql(u8, args[1], "help")) {
         try stdout_writer.print("{s}", .{usage});
     } else if (args.len >= 3 and std.mem.eql(u8, args[1], "render")) {
         for (args[2..]) |path| {
-            try render(io, arena, stderr_writer, path);
+            try renderFile(io, arena, stderr_writer, path);
         }
     } else if (args.len >= 3 and std.mem.eql(u8, args[1], "validate")) {
         for (args[2..]) |path| {
-            try validate(io, arena, stderr_writer, path);
+            try validateFile(io, arena, stderr_writer, path);
         }
     } else if (args.len == 2 and std.mem.eql(u8, args[1], "version")) {
         try stdout_writer.print("SDF Tools     {s}\nSpecification {s}\n", .{
@@ -70,12 +71,12 @@ pub fn main() !void {
     try stderr_writer.flush();
 }
 
-fn format(out: *std.Io.Writer, err: *std.Io.Writer, path: []const u8) !void {
+fn formatFile(out: *std.Io.Writer, err: *std.Io.Writer, path: []const u8) !void {
     _ = out;
     try err.print("{s}\n", .{path});
 }
 
-fn render(io: std.Io, arena: std.mem.Allocator, err: *std.Io.Writer, path: []const u8) !void {
+fn renderFile(io: std.Io, arena: std.mem.Allocator, err: *std.Io.Writer, path: []const u8) !void {
     try err.print("{s}\n", .{path});
 
     const source = try std.Io.Dir.cwd().readFileAlloc(io, path, arena, .unlimited);
@@ -89,10 +90,10 @@ fn render(io: std.Io, arena: std.mem.Allocator, err: *std.Io.Writer, path: []con
     try err.print("\nrender tree:\n\n", .{});
     try node.print(err, 0);
 
-    try node.scene.render(io, arena);
+    try render.render(node.scene.*, io, arena);
 }
 
-fn validate(io: std.Io, arena: std.mem.Allocator, err: *std.Io.Writer, path: []const u8) !void {
+fn validateFile(io: std.Io, arena: std.mem.Allocator, err: *std.Io.Writer, path: []const u8) !void {
     try err.print("{s}\n", .{path});
 
     const source = try std.Io.Dir.cwd().readFileAlloc(io, path, arena, .unlimited);

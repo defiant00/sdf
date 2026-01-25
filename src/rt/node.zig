@@ -5,6 +5,7 @@ const rt = @import("all_nodes.zig");
 const Vector3 = @import("../Vector3.zig");
 
 const Type = enum {
+    color,
     move,
     plane,
     scene,
@@ -14,12 +15,15 @@ const Type = enum {
 };
 
 pub const Node = union(Type) {
+    color: *rt.Color,
     move: *rt.Move,
     plane: *rt.Plane,
     scene: *rt.Scene,
     sphere: *rt.Sphere,
     subtract: *rt.Subtract,
     _union: *rt.Union,
+
+    pub const at = @import("node/at.zig").at;
 
     pub fn fromItem(alloc: std.mem.Allocator, item: cst.Item) !Node {
         if (item == .list and
@@ -28,7 +32,20 @@ pub const Node = union(Type) {
         {
             const len = item.list.items.items.len;
             const id = item.list.items.items[0].identifier.t_value.value;
-            if (std.mem.eql(u8, id, "move")) {
+            if (std.mem.eql(u8, id, "color")) {
+                if (len != 3) try printSignature(.color);
+
+                const color_vec = try item.list.getVec4(1);
+                const child = try fromItem(alloc, item.list.items.items[2]);
+                if (color_vec) |cv| {
+                    const color_node = try alloc.create(rt.Color);
+                    color_node.color = cv;
+                    color_node.target = child;
+                    return .{ .color = color_node };
+                }
+
+                try printSignature(.color);
+            } else if (std.mem.eql(u8, id, "move")) {
                 if (len != 3) try printSignature(.move);
 
                 const amt = try item.list.getVec3(1);
@@ -108,9 +125,10 @@ pub const Node = union(Type) {
 
     fn printSignature(t: Type) !void {
         switch (t) {
-            .move => std.debug.print("move amount(3)\n", .{}),
+            .color => std.debug.print("color color(4) node\n", .{}),
+            .move => std.debug.print("move amount(3) node\n", .{}),
             .plane => std.debug.print("plane contact(3) normal(3)\n", .{}),
-            .scene => std.debug.print("scene resolution(2)\n", .{}),
+            .scene => std.debug.print("scene resolution(2) node\n", .{}),
             .sphere => std.debug.print("sphere radius\n", .{}),
             .subtract => std.debug.print("subtract node node\n", .{}),
             ._union => std.debug.print("union node node\n", .{}),
@@ -118,21 +136,16 @@ pub const Node = union(Type) {
         return error.RenderTree;
     }
 
-    pub fn dist(self: Node, point: Vector3) f64 {
-        switch (self) {
-            .move => return self.move.target.dist(point.sub(self.move.amount)),
-            .plane => return point.y - self.plane.contact.y,
-            .scene => return self.scene.scene.dist(point),
-            .sphere => return point.length() - self.sphere.radius,
-            .subtract => return @max(self.subtract.a.dist(point), -self.subtract.b.dist(point)),
-            ._union => return @min(self._union.a.dist(point), self._union.b.dist(point)),
-        }
-    }
-
     pub fn print(self: Node, out: *std.Io.Writer, indent: u32) !void {
         for (0..indent) |_| try out.writeAll("  ");
 
         switch (self) {
+            .color => |c| {
+                try out.print("color ", .{});
+                try c.color.print(out);
+                try out.print("\n", .{});
+                try c.target.print(out, indent + 1);
+            },
             .move => |m| {
                 try out.print("move ", .{});
                 try m.amount.print(out);

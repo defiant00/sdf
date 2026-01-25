@@ -7,6 +7,9 @@ y: f64,
 z: f64,
 w: f64,
 
+pub const ZERO: Vector4 = .{ .x = 0, .y = 0, .z = 0, .w = 0 };
+pub const ONE: Vector4 = .{ .x = 1, .y = 1, .z = 1, .w = 1 };
+
 pub fn print(self: Vector4, out: *std.Io.Writer) !void {
     try out.print("[{d} {d} {d} {d}]", .{ self.x, self.y, self.z, self.w });
 }

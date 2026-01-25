@@ -49,3 +49,18 @@ pub fn getVec3(self: List, index: usize) !?Vector3 {
     }
     return null;
 }
+
+pub fn getVec4(self: List, index: usize) !?Vector4 {
+    if (self.items.items[index] == .list) {
+        const i = self.items.items[index].list.items.items;
+        if (i.len == 4 and i[0] == .number and i[1] == .number and i[2] == .number and i[3] == .number) {
+            return .{
+                .x = try std.fmt.parseFloat(f64, i[0].number.t_value.value),
+                .y = try std.fmt.parseFloat(f64, i[1].number.t_value.value),
+                .z = try std.fmt.parseFloat(f64, i[2].number.t_value.value),
+                .w = try std.fmt.parseFloat(f64, i[3].number.t_value.value),
+            };
+        }
+    }
+    return null;
+}
