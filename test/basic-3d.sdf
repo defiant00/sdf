@@ -4,8 +4,8 @@
   (move (0 -2 -4)
     (union
       (subtract
-        (color (0 0 1 1) (move (0 2 0) (sphere 1)))
-        (color (1 1 0 1) (move (0.7 2 0.5) (sphere 0.6)))
+        (albedo (0 0 1 1) (move (0 2 0) (sphere 1)))
+        (albedo (1 1 0 1) (move (0.7 2 0.5) (sphere 0.6)))
       )
       (plane (0 0 0) (0 1 0))
     )

@@ -5,19 +5,19 @@
     (union
       (union
         (union
-          (color (1 0 0 1) (move (-1.8 1 0) (sphere 1)))
-          (color (0 1 0 1) (move (0 1 0) (sphere 1)))
+          (albedo (1 0 0 1) (move (-1.8 1 0) (sphere 1)))
+          (albedo (0 1 0 1) (move (0 1 0) (sphere 1)))
         )
-        (color (0 0 1 1) (move (1.8 1 0) (sphere 1)))
+        (albedo (0 0 1 1) (move (1.8 1 0) (sphere 1)))
       )
       (union
-        (color (1 0 1 1)
+        (albedo (1 0 1 1)
           (union
             (move (-1.8 -1 0) (sphere 1))
             (move (0 -1 0) (sphere 1))
           )
         )
-        (color (1 1 0 1) (move (1.8 -1 0) (sphere 1)))
+        (albedo (1 1 0 1) (move (1.8 -1 0) (sphere 1)))
       )
     )
   )

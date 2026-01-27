@@ -1,4 +1,4 @@
-pub const Color = @import("Color.zig");
+pub const Albedo = @import("Albedo.zig");
 pub const Move = @import("Move.zig");
 pub const Node = @import("node.zig").Node;
 pub const Plane = @import("Plane.zig");

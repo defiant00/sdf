@@ -5,7 +5,7 @@ const rt = @import("all_nodes.zig");
 const Vector3 = @import("../Vector3.zig");
 
 const Type = enum {
-    color,
+    albedo,
     move,
     plane,
     scene,
@@ -15,7 +15,7 @@ const Type = enum {
 };
 
 pub const Node = union(Type) {
-    color: *rt.Color,
+    albedo: *rt.Albedo,
     move: *rt.Move,
     plane: *rt.Plane,
     scene: *rt.Scene,
@@ -32,19 +32,19 @@ pub const Node = union(Type) {
         {
             const len = item.list.items.items.len;
             const id = item.list.items.items[0].identifier.t_value.value;
-            if (std.mem.eql(u8, id, "color")) {
-                if (len != 3) try printSignature(.color);
+            if (std.mem.eql(u8, id, "albedo")) {
+                if (len != 3) try printSignature(.albedo);
 
-                const color_vec = try item.list.getVec4(1);
+                const albedo_vec = try item.list.getVec4(1);
                 const child = try fromItem(alloc, item.list.items.items[2]);
-                if (color_vec) |cv| {
-                    const color_node = try alloc.create(rt.Color);
-                    color_node.color = cv;
-                    color_node.target = child;
-                    return .{ .color = color_node };
+                if (albedo_vec) |av| {
+                    const albedo_node = try alloc.create(rt.Albedo);
+                    albedo_node.albedo = av;
+                    albedo_node.target = child;
+                    return .{ .albedo = albedo_node };
                 }
 
-                try printSignature(.color);
+                try printSignature(.albedo);
             } else if (std.mem.eql(u8, id, "move")) {
                 if (len != 3) try printSignature(.move);
 
@@ -125,7 +125,7 @@ pub const Node = union(Type) {
 
     fn printSignature(t: Type) !void {
         switch (t) {
-            .color => std.debug.print("color color(4) node\n", .{}),
+            .albedo => std.debug.print("albedo color(4) node\n", .{}),
             .move => std.debug.print("move amount(3) node\n", .{}),
             .plane => std.debug.print("plane contact(3) normal(3)\n", .{}),
             .scene => std.debug.print("scene resolution(2) node\n", .{}),
@@ -140,11 +140,11 @@ pub const Node = union(Type) {
         for (0..indent) |_| try out.writeAll("  ");
 
         switch (self) {
-            .color => |c| {
-                try out.print("color ", .{});
-                try c.color.print(out);
+            .albedo => |a| {
+                try out.print("albedo ", .{});
+                try a.albedo.print(out);
                 try out.print("\n", .{});
-                try c.target.print(out, indent + 1);
+                try a.target.print(out, indent + 1);
             },
             .move => |m| {
                 try out.print("move ", .{});

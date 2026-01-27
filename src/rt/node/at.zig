@@ -4,10 +4,10 @@ const Vector4 = @import("../../Vector4.zig");
 
 pub const Result = struct {
     dist: f64,
-    color: ?Vector4,
+    albedo: ?Vector4,
 
     pub fn fromDist(d: f64) Result {
-        return .{ .dist = d, .color = null };
+        return .{ .dist = d, .albedo = null };
     }
 
     pub fn max(a: Result, b: Result) Result {
@@ -19,15 +19,15 @@ pub const Result = struct {
     }
 
     pub fn negate(self: Result) Result {
-        return .{ .dist = -self.dist, .color = self.color };
+        return .{ .dist = -self.dist, .albedo = self.albedo };
     }
 };
 
 pub fn at(self: rt.Node, point: Vector3) Result {
     switch (self) {
-        .color => {
-            var res = self.color.target.at(point);
-            res.color = self.color.color;
+        .albedo => {
+            var res = self.albedo.target.at(point);
+            res.albedo = self.albedo.albedo;
             return res;
         },
         .move => return self.move.target.at(point.sub(self.move.amount)),

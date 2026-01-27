@@ -45,7 +45,7 @@ pub fn render(scene: rt.Scene, io: std.Io, alloc: std.mem.Allocator) !void {
                     const diffuse = @max(normal.dot(lightDir), 0);
                     const shadow = calcShadow(scene.scene, curPos, lightDir, 0.1, 5, 8);
 
-                    if (closest.color) |c| albedo = c;
+                    if (closest.albedo) |a| albedo = a;
 
                     color = albedo.mulF(diffuse * shadow);
                     break;
