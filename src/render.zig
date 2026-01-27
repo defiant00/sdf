@@ -40,11 +40,14 @@ pub fn render(scene: rt.Scene, io: std.Io, alloc: std.mem.Allocator) !void {
                 const closest = scene.scene.at(curPos);
 
                 if (closest.dist < MIN_HIT_DIST) {
+                    var albedo = Vector4.ONE;
                     const normal = calcNormal(scene.scene, curPos);
                     const diffuse = @max(normal.dot(lightDir), 0);
                     const shadow = calcShadow(scene.scene, curPos, lightDir, 0.1, 5, 8);
 
-                    color = closest.color.mulF(diffuse * shadow);
+                    if (closest.color) |c| albedo = c;
+
+                    color = albedo.mulF(diffuse * shadow);
                     break;
                 }
 

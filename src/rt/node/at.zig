@@ -4,10 +4,10 @@ const Vector4 = @import("../../Vector4.zig");
 
 pub const Result = struct {
     dist: f64,
-    color: Vector4,
+    color: ?Vector4,
 
     pub fn fromDist(d: f64) Result {
-        return .{ .dist = d, .color = Vector4.ONE };
+        return .{ .dist = d, .color = null };
     }
 
     pub fn max(a: Result, b: Result) Result {
