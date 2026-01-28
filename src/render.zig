@@ -31,7 +31,7 @@ pub fn render(scene: rt.Scene, io: std.Io, alloc: std.mem.Allocator) !void {
                 .y = -(2 * (@as(f64, @floatFromInt(py)) + 0.5) / scene.resolution.y - 1),
             }, scale);
 
-            const rd = Vector3.normalize(.{ .x = uv.x, .y = uv.y, .z = -1 });
+            const rd = Vector3.normalize(.{ .x = uv.x, .y = uv.y, .z = scene.z_distance });
             var depth: f64 = 0;
             var color: Vector4 = .{ .x = 0, .y = 0, .z = 0, .w = 1 };
 

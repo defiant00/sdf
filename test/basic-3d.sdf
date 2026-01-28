@@ -1,13 +1,13 @@
 ; basic 3d test scene
 
-(scene (400 300)
+(scene (400 300) -1
   (move (0 -2 -4)
     (union
       (subtract
-        (albedo (0 0 1 1) (move (0 2 0) (sphere 1)))
-        (albedo (1 1 0 1) (move (0.7 2 0.5) (sphere 0.6)))
+        (albedo (0 0 1 1) (move (0 2 0) (sphere)))
+        (albedo (1 1 0 1) (move (0.7 2 0.5) (scale 0.6 (sphere))))
       )
-      (plane (0 0 0) (0 1 0))
+      (plane)
     )
   )
 )

@@ -8,6 +8,7 @@ const Type = enum {
     albedo,
     move,
     plane,
+    scale,
     scene,
     sphere,
     subtract,
@@ -17,9 +18,10 @@ const Type = enum {
 pub const Node = union(Type) {
     albedo: *rt.Albedo,
     move: *rt.Move,
-    plane: *rt.Plane,
+    plane: void,
+    scale: *rt.Scale,
     scene: *rt.Scene,
-    sphere: *rt.Sphere,
+    sphere: void,
     subtract: *rt.Subtract,
     _union: *rt.Union,
 
@@ -59,42 +61,44 @@ pub const Node = union(Type) {
 
                 try printSignature(.move);
             } else if (std.mem.eql(u8, id, "plane")) {
-                if (len != 3) try printSignature(.plane);
+                if (len != 1) try printSignature(.plane);
+                return .plane;
+            } else if (std.mem.eql(u8, id, "scale")) {
+                if (len != 3) try printSignature(.scale);
 
-                const contact = try item.list.getVec3(1);
-                const normal = try item.list.getVec3(2);
-                if (contact != null and normal != null) {
-                    const plane = try alloc.create(rt.Plane);
-                    plane.contact = contact.?;
-                    plane.normal = normal.?;
-                    return .{ .plane = plane };
+                const amt = try item.list.getNum(1);
+                const child = try fromItem(alloc, item.list.items.items[2]);
+                if (amt) |a| {
+                    const scale = try alloc.create(rt.Scale);
+                    scale.amount = a;
+                    scale.target = child;
+                    return .{ .scale = scale };
                 }
 
-                try printSignature(.plane);
+                try printSignature(.scale);
             } else if (std.mem.eql(u8, id, "scene")) {
-                if (len != 3) try printSignature(.scene);
+                if (len != 4) try printSignature(.scene);
 
                 const res = try item.list.getVec2(1);
-                const child = try fromItem(alloc, item.list.items.items[2]);
-                if (res) |r| {
+                const z_dist = try item.list.getNum(2);
+                const child = try fromItem(alloc, item.list.items.items[3]);
+                if (res != null and z_dist != null) {
+                    if (z_dist == 0) {
+                        std.debug.print("z distance cannot be zero\n", .{});
+                        return error.RenderTree;
+                    }
+
                     const scn = try alloc.create(rt.Scene);
-                    scn.resolution = r;
+                    scn.resolution = res.?;
+                    scn.z_distance = z_dist.?;
                     scn.scene = child;
                     return .{ .scene = scn };
                 }
 
                 try printSignature(.scene);
             } else if (std.mem.eql(u8, id, "sphere")) {
-                if (len != 2) try printSignature(.sphere);
-
-                const rad = try item.list.getNum(1);
-                if (rad) |r| {
-                    const sphere = try alloc.create(rt.Sphere);
-                    sphere.radius = r;
-                    return .{ .sphere = sphere };
-                }
-
-                try printSignature(.sphere);
+                if (len != 1) try printSignature(.sphere);
+                return .sphere;
             } else if (std.mem.eql(u8, id, "subtract")) {
                 if (len != 3) try printSignature(.subtract);
 
@@ -127,9 +131,10 @@ pub const Node = union(Type) {
         switch (t) {
             .albedo => std.debug.print("albedo color(4) node\n", .{}),
             .move => std.debug.print("move amount(3) node\n", .{}),
-            .plane => std.debug.print("plane contact(3) normal(3)\n", .{}),
-            .scene => std.debug.print("scene resolution(2) node\n", .{}),
-            .sphere => std.debug.print("sphere radius\n", .{}),
+            .plane => std.debug.print("plane\n", .{}),
+            .scale => std.debug.print("scale amount node\n", .{}),
+            .scene => std.debug.print("scene resolution(2) z_distance node\n", .{}),
+            .sphere => std.debug.print("sphere\n", .{}),
             .subtract => std.debug.print("subtract node node\n", .{}),
             ._union => std.debug.print("union node node\n", .{}),
         }
@@ -152,20 +157,18 @@ pub const Node = union(Type) {
                 try out.print("\n", .{});
                 try m.target.print(out, indent + 1);
             },
-            .plane => |p| {
-                try out.print("plane ", .{});
-                try p.contact.print(out);
-                try out.print(" n", .{});
-                try p.normal.print(out);
-                try out.print("\n", .{});
+            .plane => try out.print("plane\n", .{}),
+            .scale => |s| {
+                try out.print("scale {d}\n", .{s.amount});
+                try s.target.print(out, indent + 1);
             },
             .scene => |s| {
                 try out.print("scene ", .{});
                 try s.resolution.print(out);
-                try out.print("\n", .{});
+                try out.print(" z {d}\n", .{s.z_distance});
                 try s.scene.print(out, indent + 1);
             },
-            .sphere => |s| try out.print("sphere {d}\n", .{s.radius}),
+            .sphere => try out.print("sphere\n", .{}),
             .subtract => |s| {
                 try out.print("subtract\n", .{});
                 try s.a.print(out, indent + 1);

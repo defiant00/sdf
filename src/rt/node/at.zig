@@ -18,6 +18,10 @@ pub const Result = struct {
         return if (b.dist < a.dist) b else a;
     }
 
+    pub fn mul(a: Result, b: f64) Result {
+        return .{ .dist = a.dist * b, .albedo = a.albedo };
+    }
+
     pub fn negate(self: Result) Result {
         return .{ .dist = -self.dist, .albedo = self.albedo };
     }
@@ -25,16 +29,17 @@ pub const Result = struct {
 
 pub fn at(self: rt.Node, point: Vector3) Result {
     switch (self) {
-        .albedo => {
-            var res = self.albedo.target.at(point);
-            res.albedo = self.albedo.albedo;
+        .albedo => |a| {
+            var res = a.target.at(point);
+            res.albedo = a.albedo;
             return res;
         },
-        .move => return self.move.target.at(point.sub(self.move.amount)),
-        .plane => return Result.fromDist(point.y - self.plane.contact.y),
-        .scene => return self.scene.scene.at(point),
-        .sphere => return Result.fromDist(point.length() - self.sphere.radius),
-        .subtract => return self.subtract.a.at(point).max(self.subtract.b.at(point).negate()),
-        ._union => return self._union.a.at(point).min(self._union.b.at(point)),
+        .move => |m| return m.target.at(point.sub(m.amount)),
+        .plane => return Result.fromDist(point.y),
+        .scale => |s| return s.target.at(point.divF(s.amount)).mul(s.amount),
+        .scene => |s| return s.scene.at(point),
+        .sphere => return Result.fromDist(point.length() - 1),
+        .subtract => |s| return s.a.at(point).max(s.b.at(point).negate()),
+        ._union => |u| return u.a.at(point).min(u.b.at(point)),
     }
 }

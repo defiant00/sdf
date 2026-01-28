@@ -1,23 +1,23 @@
 ; color test
 
-(scene (400 300)
+(scene (400 300) -1
   (move (0 0 -4)
     (union
       (union
         (union
-          (albedo (1 0 0 1) (move (-1.8 1 0) (sphere 1)))
-          (albedo (0 1 0 1) (move (0 1 0) (sphere 1)))
+          (albedo (1 0 0 1) (move (-1.8 1 0) (sphere)))
+          (albedo (0 1 0 1) (move (0 1 0) (sphere)))
         )
-        (albedo (0 0 1 1) (move (1.8 1 0) (sphere 1)))
+        (albedo (0 0 1 1) (move (1.8 1 0) (sphere)))
       )
       (union
         (albedo (1 0 1 1)
           (union
-            (move (-1.8 -1 0) (sphere 1))
-            (move (0 -1 0) (sphere 1))
+            (move (-1.8 -1 0) (sphere))
+            (move (0 -1 0) (sphere))
           )
         )
-        (albedo (1 1 0 1) (move (1.8 -1 0) (sphere 1)))
+        (albedo (1 1 0 1) (move (1.8 -1 0) (sphere)))
       )
     )
   )
